@@ -4,7 +4,7 @@
 	"entry": "gamemodes/Mrucznik-RP.pwn",
 	"output": "gamemodes/Mrucznik-RP.amx",
 	"dependencies": [
-		"Zeex/samp-plugin-crashdetect:v4.20",
+		"Zeex/samp-plugin-crashdetect:v4.21",
 		"samp-incognito/samp-streamer-plugin:v2.9.4",
 		"maddinat0r/sscanf:v2.8.3",
 		"maddinat0r/samp-log:v0.4",
@@ -14,6 +14,8 @@
 		"Open-GTO/sa-mp-fixes",
 		"emmet-jones/New-SA-MP-callbacks",
 		"oscar-broman/strlib",
+		"Mrucznik/amx_assembly:v4.69",
+		"Mrucznik/indirection",
 		"Mrucznik/YSI-Includes:v4.69",
 		"Southclaws/samp-whirlpool",
 		"Wuzi/vending",
@@ -22,8 +24,6 @@
 		"IllidanS4/PawnPlus:v1.1",
 		"Pottus/ColAndreas:v1.4.0.3",
 		"BigETI/pawn-map",
-		"Mrucznik/indirection",
-		"Mrucznik/amx_assembly:v4.69",
 		"Mrucznik/samp-plugin-profiler:v2.15.4",
 		"Southclaws/progress2",
 		"oscar-broman/samp-inline-sort"
@@ -42,10 +42,10 @@
 		]
 	},
 	"runtime": {
-		"version": "0.3.7",
+		"version": "0.3.DL-R1",
 		"mode": "server",
 		"echo": "-",
-		"rcon_password": "funiol",
+		"rcon_password": "funioldupa",
 		"port": 7777,
 		"hostname": "!PL! Mrucznik Role Play - local development !PL!",
 		"maxplayers": 1000,
