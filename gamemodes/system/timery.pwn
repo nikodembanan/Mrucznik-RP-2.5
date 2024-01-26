@@ -3281,7 +3281,7 @@ public Fillup()
 			}
 			else
 			{
-				format(string,sizeof(string),"Nie posiadasz doœæ pieniêdzy ($%d) aby zatankowaæ ten pojazd.",FillUp);
+				format(string,sizeof(string),"Nie posiadasz doœæ pieniêdzy ($%d) aby zatankowaæ ten pojazd.",FillUpPrice);
 				sendErrorMessage(i,string);
 			}
 
