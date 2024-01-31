@@ -49,7 +49,7 @@ YCMD:swat(playerid, params[], help)
 			{
 				if(OnDuty[playerid] == 1)
 				{
-					if(PlayerInfo[playerid][pRank] >= 2)
+					if(PlayerInfo[playerid][pRank] >= 2 || (PlayerInfo[playerid][pLider] != 1 && PlayerInfo[playerid][pMember] != 1))
 					{
 						format(string, sizeof(string), "* %s bierze karabin szturmowy oraz mundur i tarczê SWAT.", sendername);
 						ProxDetector(30.0, playerid, string, COLOR_PURPLE,COLOR_PURPLE,COLOR_PURPLE,COLOR_PURPLE,COLOR_PURPLE);
