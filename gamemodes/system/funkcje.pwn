@@ -1,6 +1,10 @@
 //funkcje.pwn
 //FUNKCJE DLA CA£EGO SERWERA
 
+Float:GetDistanceBetweenPoints(Float:x1, Float:y1, Float:z1, Float:x2, Float:y2, Float:z2)
+{
+    return VectorSize(x1-x2, y1-y2, z1-z2);
+}
 
 /* SSCANF FIX */
 SSCANF:fix(string[])
@@ -868,17 +872,31 @@ public CountDownVehsRespawn()
 				used[veh] = true;
 			}
 		}
-		for(new v; v < MAX_VEHICLES; v++)
+		for(new v = 1; v < MAX_VEHICLES; v++)
 		{
+			printf("respawn v = %i", v);
 			if(!used[v])
 			{
-			    RespawnVehicleEx(v);
+				if(v <= CAR_End)
+				{
+					DestroyVehicle(v);
+					carselect = GetRandomVehicleForStealingModel();
+					AddCar(v - 1);
+					SetVehicleNumberPlate(v, "{1F9F06}M-RP");
+				}
+				else
+				{
+			    	RespawnVehicleEx(v);
+				}
+
 			    if(Car_GetOwnerType(v) == CAR_OWNER_PLAYER)
 			    {
                     Car_Unspawn(v);
 	            }
 			}
 		}
+
+		ReloadDeluxeCarsForStealing();
 	}
 }
 
@@ -7891,12 +7909,7 @@ AddCar(car)
 {
 	new randcol = random(126);
 	new randcol2 = 1;
-	if (rccounter == 14)
-	{
-		rccounter = 0;
-	}
-	new id = AddStaticVehicleEx(carselect[rccounter], CarSpawns[car][pos_x], CarSpawns[car][pos_y], CarSpawns[car][pos_z], CarSpawns[car][z_angle], randcol, randcol2, -1);
-	rccounter++;
+	new id = AddStaticVehicleEx(RandCars[carselect][0], CarSpawns[car][pos_x], CarSpawns[car][pos_y], CarSpawns[car][pos_z], CarSpawns[car][z_angle], randcol, randcol2, -1);
 	return id;
 }
 
@@ -11823,33 +11836,158 @@ public TourCamera(playerid, step)
 //--------------------------------------------------
 
 
-ZaladujSamochody()
+GetRandomVehicleForStealingModel()
+{
+	new randa = random(53);
+	new model;
+
+	if(randa == 0)
+	{
+		model = randa;
+	}
+	else if(randa <= 8)
+	{
+		model = floatround(float(randa) / 2.0, floatround_ceil);
+	}
+	else if(randa <= 32)
+	{
+		model = floatround(float(randa) / 3.0, floatround_floor) + 2;
+	}
+	else
+	{
+		model = floatround(float(randa) / 4.0, floatround_ceil) + 4;
+	}
+
+	return model;
+}
+
+
+ZaladujSamochodyDoKradziezy()
 {
     new id;
-    new randa = random(sizeof(RandCars));
-	randa = random(sizeof(RandCars));carselect[0] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[1] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[2] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[3] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[4] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[5] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[6] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[7] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[8] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[9] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[10] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[11] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[12] = RandCars[randa][0];
-	randa = random(sizeof(RandCars));carselect[13] = RandCars[randa][0];
+
+	////TODO:WYWALIÆ
+	new carselectcount[18] = {0, ...};
+	///TODO:WYWALIÆ
 
     for(new i = 0; i < 165; i++)
 	{
+		carselect = GetRandomVehicleForStealingModel();
+
+		////TODO:WYWALIÆ
+		carselectcount[carselect]++;
+		///TODO:WYWALIÆ
+
         id = AddCar(i);
     }
+
+	////TODO:WYWALIÆ
+	for(new i = 0; i < 18; i++){
+		new komunikat[128];
+		format(komunikat, sizeof(komunikat), "%s: %i", VehicleNames[RandCars[i][0] - 400], carselectcount[i]);
+		printf(komunikat);
+	}
+	////TODO:WYWALIÆ
+
     CAR_End = id;
     printf("Wczytano %d aut do kradzie¿y", CAR_End);
 	return 1;
 }
+
+
+LoadDeluxeCarsForStealing()
+{
+	new deluxe_models[] = {402, 587, 562}; //Buffalo, Euros, Elegy
+
+	new bool:used[CAR_AMOUNT] = {false, ... };
+	foreach(new p : Player)
+	{
+		if(IsPlayerInAnyVehicle(p))
+		{
+			new veh = GetPlayerVehicleID(p);
+			used[veh] = true;
+		}
+	}
+
+	for(new i = 0; i < sizeof(deluxe_cars_for_stealing_ids); i++)
+	{
+		if(deluxe_cars_for_stealing_ids[i] != -1)
+		{
+			continue;
+		}
+
+		new valid_rand = false;
+		new deluxe_id;
+
+		while(!valid_rand || used[deluxe_id])
+		{
+			valid_rand = true;
+			deluxe_id = true_random(116) + 50; // tylko pojazdy w LS
+
+			for(new j = 0; j < i; j++)
+			{
+				if(deluxe_cars_for_stealing_ids[j] == deluxe_id)
+				{
+					valid_rand = false;
+					break;
+				}
+			}
+		}
+
+		deluxe_cars_for_stealing_ids[i] = deluxe_id;
+		DestroyVehicle(deluxe_id);
+		AddStaticVehicleEx(deluxe_models[i % sizeof(deluxe_models)], CarSpawns[deluxe_id-1][pos_x], CarSpawns[deluxe_id-1][pos_y], CarSpawns[deluxe_id-1][pos_z], CarSpawns[deluxe_id-1][z_angle], random(126), 1, -1);
+		SetVehicleNumberPlate(deluxe_id, "{1F9F06}M-RP");
+
+		//TODO: WYWALIC!!!!!!!!!!!!!!!!
+		new string[128];
+		format(string, sizeof(string), "Deluxe: %i", deluxe_id);
+		SendClientMessageToAll(COLOR_YELLOW, string);
+		printf(string);
+		//TODO: WYWALIC!!!!!!!!!!!!!!!!
+	}
+}
+
+
+RemoveDeluxeCarForStealing(veh_id)
+{
+	for(new i = 0; i < sizeof(deluxe_cars_for_stealing_ids); i++)
+	{
+		if(deluxe_cars_for_stealing_ids[i] == veh_id)
+		{
+			deluxe_cars_for_stealing_ids[i] = -1;
+			DestroyVehicle(veh_id);
+			AddCar(veh_id - 1);
+			SetVehicleNumberPlate(veh_id, "{1F9F06}M-RP");
+			break;
+		}
+	}
+}
+
+
+ReloadDeluxeCarsForStealing()
+{
+	new bool:used[CAR_AMOUNT] = {false, ... };
+	foreach(new p : Player)
+	{
+		if(IsPlayerInAnyVehicle(p))
+		{
+			new veh = GetPlayerVehicleID(p);
+			used[veh] = true;
+		}
+	}
+
+	for(new i = 0; i < sizeof(deluxe_cars_for_stealing_ids); i++)
+	{
+		new deluxe_veh_id = deluxe_cars_for_stealing_ids[i];
+		if(!used[deluxe_veh_id])
+		{
+			RemoveDeluxeCarForStealing(deluxe_veh_id);
+		}
+	}
+	LoadDeluxeCarsForStealing();
+}
+
 
 Support_GetID()
 {
@@ -12668,6 +12806,8 @@ public TimeUpdater()
     format(realtime_string, 32, "%02d:%02d", Hour, Minute);
     TextDrawSetString(RealtimeTXD, realtime_string);
 }
+
+
 
 //--------------------------------------------------
 

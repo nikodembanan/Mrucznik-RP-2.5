@@ -25,7 +25,13 @@ new Float:czitY;
 new Float:czitZ;
 
 new timerAC[MAX_PLAYERS];
-new timeAC[MAX_PLAYERS]; 
+new timeAC[MAX_PLAYERS];
+new timeFakeVehRespawn[MAX_PLAYERS] = {0, ...};
+new countFakeVehRespawn[MAX_PLAYERS] = {0, ...};
+new unoccupiedVehToCheckAC[MAX_VEHICLES] = {false, ...};
+new unoccupiedVehToCheckPlayersAC[MAX_VEHICLES][MAX_PLAYERS] = {{false, ...}, ...};
+new unoccupiedVehBlockAC[MAX_PLAYERS] = {false, ...};
+
 //doors
 new noAccessCome[MAX_PLAYERS]; 
 
@@ -1018,10 +1024,9 @@ new SpamujeMechanik[MAX_PLAYERS];//mechanik
 new AntySpam[MAX_PLAYERS];
 new OdpalanieSpam[MAX_PLAYERS];//OdpalanieSpam
 new DomOgladany[MAX_PLAYERS];//SYSTEM DOMÓW BY MRUCZNIK
-new carselect[15];
+new carselect;
 new cbjstore[128];
 new motd[256];
-new rccounter = 0;
 new ghour = 0;
 new gminute = 0;
 new gsecond = 0;
@@ -1037,10 +1042,16 @@ new shifthour;
 
 new intrate = 1;
 new levelexp = 4;
-new SELLCAR1[] = { 1000, 1124, 1245, 1349, 1475, 1574, 1636, 1762, 1895, 1946, 2000 };
-new SELLCAR2[] = { 2099, 2135, 2255, 2378, 2457, 2563, 2614, 2721, 2878, 2988, 3000 };
-new SELLCAR3[] = { 3058, 3175, 3212, 3377, 3454, 3555, 3678, 3751, 3865, 3964, 4000 };
-new SELLCAR4[] = { 4077, 4123, 4275, 4378, 4422, 4565, 4613, 4752, 4897, 4911, 5000 };
+
+new deluxe_cars_for_stealing_ids[] = {-1, -1, -1}; // ID pojazdów "deluxe" do kradzie¿y
+new stole_a_car[MAX_PLAYERS]; // 1 je¿eli gracz u¿y³ /ukradnij w pojeŸdzie, w którym siê obecnie znajduje; 0 w przeciwnym wypadku [PRACA Z£ODZIEJA AUT - Banan]
+new stole_a_car_lspd_bonus[MAX_PLAYERS]; // 1 je¿eli gracz zosta³ zauwa¿ony przez kamery - bonus do ceny za sprzeda¿; 0 w przeciwnym wypadku [PRACA Z£ODZIEJA AUT - Banan]
+new stole_a_car_timers_ids[MAX_PLAYERS][2]; // je¿eli gracz posiada GPSa z powodu kradzie¿y pojazdu, to tutaj przechowywane s¹ timery, pod [0] jest timer do aktualizacji pozycji gpsa na mapie, pod [1] jest timer do zatrzymania gpsa po up³ywie zadanego czasu, je¿eli timery nie istniej¹, to obie wartoœci s¹ ustawiane na -1 [PRACA Z£ODZIEJA AUT - Banan]
+new stole_a_car_seconds_to_find_cp[MAX_PLAYERS];
+new stole_a_car_lspd_map_icon[MAX_PLAYERS]; // je¿eli gracz posiada GPSa z powodu kradzie¿y pojazdu, to tutaj przechowywane jest ID ikony na mapie (CreateDynamicMapIcon) tego GPSa, w przeciwnym wypadku jest to -1 [PRACA Z£ODZIEJA AUT - Banan]
+new stole_a_car_checkpoint[MAX_PLAYERS][2]; // je¿eli gracz ma aktywne zlecenie z³odzieja pojazdów, to tutaj przechowywane jest: [0] - ID ikony na mapie (CreateDynamicMapIcon), [1] - ID obszaru (CreateDynamicCircle); w przeciwnym razie -1 [PRACA Z£ODZIEJA AUT - Banan]
+new stole_a_car_anti_tp[MAX_PLAYERS];
+
 //new Float:ChangePos[MAX_PLAYERS][3];
 new ChangePos2[MAX_PLAYERS][2];
 new Float:PlayerPos[MAX_PLAYERS][6];
@@ -1112,6 +1123,9 @@ ZerujZmienne(playerid)
 	organizacje_clearCache(playerid);
 	//z disconecta
 
+	timeFakeVehRespawn[playerid] = 0;
+	countFakeVehRespawn[playerid] = 0;
+
     new Text3D:tmp_label = PlayerInfo[playerid][pDescLabel];
 
     PlayerInfo[playerid][pDescLabel] = tmp_label;
@@ -1142,6 +1156,13 @@ ZerujZmienne(playerid)
 	PlayerCuffed[playerid] = 0;//anty /q
 	gRO[playerid] = 0;
 	
+	stole_a_car[playerid] = 0;
+	stole_a_car_lspd_bonus[playerid] = 0;
+	stole_a_car_timers_ids[playerid] = {-1, -1};
+	stole_a_car_seconds_to_find_cp[playerid] = 0;
+	stole_a_car_lspd_map_icon[playerid] = -1;
+	stole_a_car_checkpoint[playerid] = {-1, -1};
+	stole_a_car_anti_tp[playerid] = 0;
 	
     lastMsg[playerid] = 0;
 
@@ -1439,6 +1460,10 @@ ZerujZmienne(playerid)
 
     strdel(PlayerDesc[playerid], 0, 128 char);
     strpack(PlayerDesc[playerid], "BRAK");
+
+	foreach(new v : Vehicle) unoccupiedVehToCheckPlayersAC[v][playerid] = false;
+	unoccupiedVehBlockAC[playerid] = false;
+
 	return 1;
 }
 //EOF

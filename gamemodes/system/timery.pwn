@@ -1,5 +1,7 @@
 //timery.pwn
 
+forward AC_AntyVehSpamLag();
+
 //25.06.2014 Aktualizacja timerów (wszystkich) - optymalizacja Kubi
 forward SpecToggle(playerid);
 public SpecToggle(playerid)
@@ -936,7 +938,7 @@ public MainTimer()
     }
     if(TICKS_3Sec == 2)
     {
-    	
+    	AC_AntyVehSpamLag();
         VehicleUpdate();
         CustomPickups();
         GangZone_ShowInfoToParticipants();
@@ -3207,6 +3209,11 @@ public JednaSekundaTimer()
 				PlayerCuffedTime[i] -= 1;
 			}
 		}
+
+		if(stole_a_car_seconds_to_find_cp[i] > 0)
+		{
+			stole_a_car_seconds_to_find_cp[i]--;
+		}
 	}
 	return 1;
 }
@@ -3518,6 +3525,38 @@ public DamagedHP(playerid)
 {
 	RemovePlayerAttachedObject(playerid, 2);
 	return 1;
+}
+
+public FinishLSPDCarThiefTracking(playerid)
+{
+	EnableCarThiefCheckpoint(playerid);
+	DestroyCarThiefLSPDMapIcon(playerid);
+}
+
+public UpdateCarThiefLSPDMapIcon(playerid)
+{
+	new icon_id = stole_a_car_lspd_map_icon[playerid];
+
+	if(IsValidDynamicMapIcon(icon_id))
+	{
+		if(IsPlayerConnected(playerid) && stole_a_car[playerid])
+		{
+			new Float:thief_pos_x, Float:thief_pos_y, Float:thief_pos_z;
+			GetPlayerPos(playerid, thief_pos_x, thief_pos_y, thief_pos_z);
+			Streamer_SetItemPos(STREAMER_TYPE_MAP_ICON, icon_id, thief_pos_x, thief_pos_y, thief_pos_z);
+		}
+		else
+		{
+			DestroyCarThiefLSPDMapIcon(playerid);
+		}
+	} 
+
+	return 1;
+}
+
+public AntiTeleportCarThief(playerid)
+{
+	stole_a_car_anti_tp[playerid] = 0;
 }
 
 //EOF
