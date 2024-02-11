@@ -560,8 +560,6 @@ AC_AntyVehSpamLag()
 				rotation_initialized[v] = GetVehicleBoundingBox(v, v_bbox[v]);
 			}
 
-			printf("id: %d, v_close_count: %d, v_diagonal: %f", v, v_close_count, v_diagonal);
-
 			// Zliczanie ile innych pojazdów znajduje siê w b. bliskiej odleg³oœci od auta przesuniêtego przez UnoccupiedSync
 			foreach(new v_other : Vehicle)
 			{
@@ -582,14 +580,10 @@ AC_AntyVehSpamLag()
 							}
 						}
 
-						printf("other vehicle close enough - id:%d - dist:%f", 
-							v_other, v_distance);
-
 						if(CheckIfCuboidsIntersect(v_bbox[v], v_bbox[v_other]))
 						{
 							v_close_count++;
 							v_to_respawn[v_other] = true;
-							printf("bounding boxes intersect for vehicled %d and %d - v_close_count: %d", v, v_other, v_close_count);
 						}
 					}
 				}
@@ -638,8 +632,6 @@ AC_AntyVehSpamLag()
 				{
 					if(v_to_respawn[v_respawn])
 					{
-						printf("respawning veh id:%d", v_respawn);
-
 						unoccupiedVehToCheckAC[v_respawn] = false; // Nie ma sensu po raz kolejny sprawdzaæ tych aut, bo zosta³y one ju¿ zrespawnowane
 						RespawnVehicleEx(v_respawn);
 					}
@@ -660,7 +652,6 @@ AC_AntyVehSpamLag()
 	}
 
 	performUnoccupiedVehCheckAC = false;
-	printf("EXECUTION TIME: %d ms", GetTickCount() - oldTick);
 }
 
 IPacket:UNOCCUPIED_SYNC(playerid, BitStream:bs)
