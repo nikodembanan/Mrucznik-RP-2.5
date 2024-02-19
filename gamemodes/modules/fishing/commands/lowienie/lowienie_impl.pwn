@@ -66,7 +66,9 @@ command_lowienie_Impl(playerid)
         {
             new Float:x, Float:y, Float:z;
             GetPlayerPos(playerid, x, y, z);
-            CA_FindZ_For2DCoord(x, y, z);
+            #if defined _colandreas_included
+                CA_FindZ_For2DCoord(x, y, z);
+            #endif
             new Float:depthBonus = 2 - z*(1/-60);
             if(depthBonus < 1) 
             {
